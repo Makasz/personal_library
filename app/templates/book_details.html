@@ -24,7 +24,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Personal library</a>
+            <a class="navbar-brand" href="{{ url_for('user_homepage') }}">Personal library</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <form class="navbar-form navbar-right" role="form">
@@ -44,34 +44,43 @@
     </div>
 </nav>
 
-<div class="flex-container">
-    <!-- Example row of columns -->
-    {% for book in books %}
+<div class="container-fluid">
+    <div class="panel panel-primary book_display">
         {% if book.status == 'free' %}
-        <div class="col-md-4 book">
+        <div class="panel-heading">{{ book.title }}</div>
         {% else %}
-        <div class="col-md-4 book grayout">
+        <div class="panel-heading">{{ book.title }} [NOT AVAILABLE]</div>
         {% endif %}
-            <div class="panel panel-primary book_display ">
-                {% if book.title|length > 30 %}
-                    <div class="panel-heading">{{ book.title[:30] }}...</div>
-                {% else %}
-                    <div class="panel-heading">{{ book.title }}</div>
-                {% endif %}
-                <a href="{{ url_for('view_book', isbn=book.isbn) }}">
-                    <div class="panel-body"><img src="{{ book.img_url }}" class="img-responsive"
-                                                 style="height:180px; margin: auto" alt="Image"></div>
-                </a>
-            </div>
+        <div class="panel-body"><img src="{{ book.img_url }}" class="img-responsive"
+                                     style="max-height:200px; margin: auto" alt="Image"></div>
+        <div class="panel-footer">{{ book.description }}</div>
+
+        {% if book.status == 'free' %}
+        <div class="lend_form">
+            <form class="form-inline" method="post" action="#">
+                {{ lend_form.hidden_tag() }}
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    {{ lend_form.username(size=32,type="text", class_="form-control", id="username", placeholder="User137") }}
+                </div>
+                <div class="form-group">
+                    <label for="time">Date to:</label>
+                    {{ lend_form.time(size=32,type="text", class_="form-control", id="time", placeholder="14-09-2018") }}
+                </div>
+                <div class="form-group">
+                    {{ lend_form.submitL(class="btn btn-default") }}
+                </div>
+            </form>
         </div>
+        {% endif %}
 
-    {% endfor %}
+    </div>
+</div>
+</div>
 
-
-
-    {#    <footer>#}
-    {#        <p>&copy; Company 2015</p>#}
-    {#    </footer>#}
+<footer>
+    <p>&copy; Company 2015</p>
+</footer>
 </div> <!-- /container -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
 <script>window.jQuery || document.write('<script src="static/js/vendor/jquery-1.11.2.js"><\/script>')</script>

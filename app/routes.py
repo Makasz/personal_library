@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash
 from flask import request
 from werkzeug.urls import url_parse
 from app import db
-from app.loginform import RegistrationForm, BookForm, SearchBookForm
+from app.loginform import RegistrationForm, BookForm, SearchBookForm, LendBookToForm
 
 
 @app.teardown_appcontext
@@ -48,7 +48,6 @@ def login_m():
 def user_homepage():
     username = session['username']
     books = Books.query.filter_by(owner=username)
-
     if request.args.get('value') is not None and len(request.args.get('value')) > 0:
         books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
     form = SearchBookForm()
@@ -98,3 +97,23 @@ def add_book():
         flash('Congratulations, you added new book to collection!')
         return redirect(url_for('user_homepage'))
     return render_template('add_book.html', title='Add book', form=form)
+
+
+@app.route('/book_details', methods=['GET', 'POST'])
+@login_required
+def view_book():
+    lend_form = LendBookToForm()
+    form = SearchBookForm()
+    isbn = request.args.get('isbn')
+    book = Books.query.filter_by(isbn=isbn).first()
+    print(lend_form.username.data,lend_form.time.data, lend_form.submitL.data, lend_form.validate_on_submit())
+    print(form.value.data, form.validate_on_submit())
+    if lend_form.submitL.data and lend_form.validate_on_submit():
+        book.status = lend_form.time.data
+        book.current_owner = lend_form.username.data
+        print(book)
+        db.session.add(book)
+        db.session.commit()
+        flash('Congratulations, you added new book to collection!')
+        return redirect(url_for('user_homepage'))
+    return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=book, form=form)

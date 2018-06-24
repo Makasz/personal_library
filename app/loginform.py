@@ -43,3 +43,9 @@ class BookForm(FlaskForm):
 
 class SearchBookForm(FlaskForm):
     value = StringField('Value')
+
+
+class LendBookToForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    time = StringField('Time', validators=[DataRequired()])
+    submitL = SubmitField('Lend')
