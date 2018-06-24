@@ -1,8 +1,10 @@
-from app import db
-from app.models import User
-u = User(username='susan', email='susan@example.com')
+from flask_mail import Message
+from app import mail
+from app import app
+msg = Message('test subject', sender=app.config['ADMINS'][0],
+    recipients=['your-email@example.com'])
+msg.body = 'text body'
+msg.html = '<h1>HTML body</h1>'
 
-u.set_password('mypassword')
-print(u.check_password('mypassword'))
-# db.session.add(u)
-# db.session.commit()
+mail.connect('smtp.gmail.com', '587')
+mail.send(msg)

@@ -1,4 +1,4 @@
-from app import app
+from app import app, mail
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 import sqlite3
 from flask import g
@@ -12,6 +12,7 @@ from flask import request
 from werkzeug.urls import url_parse
 from app import db
 from app.loginform import RegistrationForm, BookForm, SearchBookForm, LendBookToForm
+from flask_mail import Mail, Message
 
 
 @app.teardown_appcontext
@@ -68,6 +69,9 @@ def register():
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
+        msg = Message('Hello', sender='yourId@gmail.com', recipients=['id1@gmail.com'])
+        msg.body = "This is the email body"
+        mail.send(msg)
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
