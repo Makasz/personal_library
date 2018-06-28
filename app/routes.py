@@ -69,8 +69,8 @@ def register():
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
-        msg = Message('Hello', sender='yourId@gmail.com', recipients=['id1@gmail.com'])
-        msg.body = "This is the email body"
+        msg = Message('Registration conformation', sender='yourId@gmail.com', recipients=[form.email.data])
+        msg.body = "Please click link below to finish registration:"
         mail.send(msg)
         db.session.add(user)
         db.session.commit()
