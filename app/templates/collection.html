@@ -41,7 +41,7 @@
                 <a type="submit" class="btn btn-success" href="{{ url_for('logout') }}">Log off</a>
             </form>
             <form class="navbar-form navbar-right" role="form">
-                <a type="submit" class="btn btn-success" href="{{ url_for('user_collection') }}">My collection</a>
+                <a type="submit" class="btn btn-success" href="{{ url_for('user_homepage') }}">All books</a>
             </form>
         </div><!--/.navbar-collapse -->
     </div>
@@ -62,9 +62,6 @@
             <a href="{{ url_for('view_book', isbn=book.isbn) }}" class="book-img-container">
                 <div class="book-body"><img src="{{ book.img_url }}" class="book-img" alt="Image"></div>
             </a>
-            <div class="book-button" >
-                <a href="{{ url_for('add_book_to_collection', isbn=book.isbn) }}">Add to collection</a>
-            </div>
             <div class="book-button" style="border-radius: 0px 0px 10px 10px;" href="{{ url_for('view_book', isbn=book.isbn) }}">
                 <a href="{{ url_for('view_book', isbn=book.isbn) }}">View details</a>
             </div>

@@ -17,7 +17,7 @@ class Config(object):
     MAIL_USERNAME = 'haraldsilnonogi@gmail.com'
     MAIL_PASSWORD = 'marcepan1'
     ADMINS = ['haraldsilnonogi@gmail.com']
-
+    # SQLALCHEMY_ECHO = True
     # EMAIL_USE_TLS = True
     # EMAIL_HOST = 'smtp.gmail.com'
     # EMAIL_HOST_USER = 'haraldsilnonogi@gmail.com'

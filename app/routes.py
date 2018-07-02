@@ -1,16 +1,12 @@
 from app import app, mail
-from flask import Flask, render_template, request, flash, redirect, url_for, session
-import sqlite3
+from flask import render_template, flash, redirect, url_for, session
 from flask import g
-from config_default import Config
 from app.loginform import LoginForm
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, logout_user, login_required, current_user, login_user
-from app.models import User, Books
-from werkzeug.security import generate_password_hash
+from app.models import User, Books, add_book_db, add_book_collection_db, Ownership, rel
 from flask import request
 from werkzeug.urls import url_parse
-from app import db
+from app import db, metadata
 from app.loginform import RegistrationForm, BookForm, SearchBookForm, LendBookToForm
 from flask_mail import Mail, Message
 
@@ -47,12 +43,35 @@ def login_m():
 @app.route('/index2', methods=['POST', 'GET'], endpoint='user_homepage')
 @login_required
 def user_homepage():
-    username = session['username']
-    books = Books.query.filter_by(owner=username)
+    print(metadata.tables.keys())
+    books = Books.query.all()
     if request.args.get('value') is not None and len(request.args.get('value')) > 0:
         books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
     form = SearchBookForm()
-    return render_template('index2.html', title='Test Page', books=books, form=form)
+    return render_template('index2.html', title='All books', books=books, form=form)
+
+
+@app.route('/add', methods=['POST', 'GET'], endpoint='add_book_to_collection')
+@login_required
+def add_book_to_collection():
+    isbn = request.args.get('isbn')
+    add_book_collection_db(isbn, session['username'], db)
+    return redirect(url_for('user_homepage'))
+
+
+@app.route('/collection', methods=['POST', 'GET'], endpoint='user_collection')
+@login_required
+def user_collection():
+    username = session['username']
+    user = User.query.filter_by(username=username)
+    for u in user:
+        print(str(u.books))
+        books = u.books
+        print(books)
+    if request.args.get('value') is not None and len(request.args.get('value')) > 0:
+        books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
+    form = SearchBookForm()
+    return render_template('collection.html', title='Your books', books=books, form=form)
 
 
 @app.route('/logout')
@@ -86,19 +105,7 @@ def add_book():
     print(form)
     print(form.is_submitted())
     if form.validate_on_submit():
-        book = Books(isbn=form.isbn.data,
-                     title=form.title.data,
-                     author_name=form.author_name.data,
-                     author_surname=form.author_surname.data,
-                     owner=form.owner.data,
-                     status=form.status.data,
-                     current_owner=form.current_owner.data,
-                     img_url=form.img_url.data,
-                     description=form.description.data,
-                     )
-        db.session.add(book)
-        db.session.commit()
-        flash('Congratulations, you added new book to collection!')
+        add_book_db(form, db)
         return redirect(url_for('user_homepage'))
     return render_template('add_book.html', title='Add book', form=form)
 
@@ -118,6 +125,5 @@ def view_book():
         print(book)
         db.session.add(book)
         db.session.commit()
-        flash('Congratulations, you added new book to collection!')
         return redirect(url_for('user_homepage'))
     return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=book, form=form)

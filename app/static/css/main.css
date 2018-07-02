@@ -70,10 +70,6 @@ input::-webkit-input-placeholder {
 }
 
 
-.book_img {
-	max-height: 100px;
-	max-width: 100px;
-}
 .book {
 	padding: 5px;
 }
@@ -97,9 +93,36 @@ input::-webkit-input-placeholder {
 	display:inline-block;
 }
 
-.panel-body {
-	text-align: center;
+.container {
+	display: flex;
+	flex-wrap: wrap;
 }
 
+.book {
+	padding: 0px;
+	min-width: 250px;
+	background: #2b669a;
+	margin: 5px;
+	border-radius: 10px;
+}
 
+.book-header {
+	border-radius: 10px 10px 0px 0px;
+	text-align: center;
+	font-size: 120%;
+	background: #5bc0de;
+}
+.book-img-container {
+	margin: auto;
+}
 
+.book-img {
+	display: block;
+	margin: 5px auto 5px auto;
+	max-height: 150px;
+}
+.book-button {
+	background: #9acfea;
+	border: #23527c solid 1px;
+	text-align: center;
+}
