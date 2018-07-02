@@ -82,9 +82,16 @@ def add_book_db(form, database):
 
 
 def add_book_collection_db(isbn_p, username_p, database):
+    if isbn_p in [b.isbn for b in User.query.filter_by(username=username_p).first().books]:
+        return 0
     user = User.query.filter_by(username=username_p).first()
     book = Books.query.filter_by(isbn=isbn_p).first()
-    print(user, book)
     book.owners.append(user)
-    # database.session.add(ownership)
+    database.session.commit()
+
+
+def remove_book_from_collection_db(isbn_p, username_p, database):
+    user = User.query.filter_by(username=username_p).first()
+    book = Books.query.filter_by(isbn=isbn_p).first()
+    book.owners.remove(user)
     database.session.commit()

@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, session
 from flask import g
 from app.loginform import LoginForm
 from flask_login import LoginManager, logout_user, login_required, current_user, login_user
-from app.models import User, Books, add_book_db, add_book_collection_db, Ownership, rel
+from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db
 from flask import request
 from werkzeug.urls import url_parse
 from app import db, metadata
@@ -59,15 +59,20 @@ def add_book_to_collection():
     return redirect(url_for('user_homepage'))
 
 
+@app.route('/remove', methods=['POST', 'GET'], endpoint='remove_book_from_collection')
+@login_required
+def remove_book_from_collection():
+    isbn = request.args.get('isbn')
+    remove_book_from_collection_db(isbn, session['username'], db)
+    return redirect(url_for('user_collection'))
+
+
 @app.route('/collection', methods=['POST', 'GET'], endpoint='user_collection')
 @login_required
 def user_collection():
     username = session['username']
-    user = User.query.filter_by(username=username)
-    for u in user:
-        print(str(u.books))
-        books = u.books
-        print(books)
+    user = User.query.filter_by(username=username).first()
+    books = user.books
     if request.args.get('value') is not None and len(request.args.get('value')) > 0:
         books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
     form = SearchBookForm()
