@@ -20,8 +20,8 @@ def close_connection(exception):
         db.close()
 
 
-@app.route('/', methods=['POST', 'GET'], endpoint='login_m')
-def login_m():
+@app.route('/', methods=['POST', 'GET'], endpoint='login')
+def login():
     if current_user.is_authenticated:
         print(current_user)
         print("User logged" + str(current_user))
@@ -32,10 +32,10 @@ def login_m():
         print(user)
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
-            return redirect(url_for('login_m'))
+            return redirect(url_for('login'))
         if not user.activated == 'activated':
             flash('User not activated')
-            return redirect(url_for('login_m'))
+            return redirect(url_for('login'))
         login_user(user)
         session['username'] = form.username.data
         next_page = request.args.get('next')
@@ -87,7 +87,7 @@ def user_collection():
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('login_m'))
+    return redirect(url_for('login'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -116,7 +116,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login_m'))
+        return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
 
@@ -160,7 +160,7 @@ def activate():
         user = User.query.filter_by(username=registration.username).first()
         user.activated = 'activated'
         db.session.commit()
-        return redirect(url_for('login_m'))
-    return redirect(url_for('login_m'))
+        return redirect(url_for('login'))
+    return redirect(url_for('login'))
 
 
