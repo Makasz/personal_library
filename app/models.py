@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True, primary_key=True)
     email = db.Column(db.String(128), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    activated = db.Column(db.String(128))
     books = db.relationship('Books', secondary=rel, backref=db.backref('owners', lazy='dynamic'))
 
     def __repr__(self):
@@ -51,10 +52,7 @@ class Ownership(UserMixin, db.Model):
         return '<ISBN: {} Username: {}'.format(self.isbn, self.username)
 
 
-
-
-
-class Registration(UserMixin, db.Model):
+class Registrations(UserMixin, db.Model):
     token = db.Column(db.Text, unique=True, primary_key=True)
     username = db.Column(db.Text)
     date = db.Column(db.Text)

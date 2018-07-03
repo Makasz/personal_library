@@ -3,12 +3,14 @@ from flask import render_template, flash, redirect, url_for, session
 from flask import g
 from app.loginform import LoginForm
 from flask_login import LoginManager, logout_user, login_required, current_user, login_user
-from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db
+from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db, Registrations
 from flask import request
 from werkzeug.urls import url_parse
 from app import db, metadata
 from app.loginform import RegistrationForm, BookForm, SearchBookForm, LendBookToForm
 from flask_mail import Mail, Message
+import random
+from datetime import datetime, timedelta
 
 
 @app.teardown_appcontext
@@ -30,6 +32,9 @@ def login_m():
         print(user)
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
+            return redirect(url_for('login_m'))
+        if not user.activated == 'activated':
+            flash('User not activated')
             return redirect(url_for('login_m'))
         login_user(user)
         session['username'] = form.username.data
@@ -95,6 +100,18 @@ def register():
         user.set_password(form.password.data)
         msg = Message('Registration conformation', sender='yourId@gmail.com', recipients=[form.email.data])
         msg.body = "Please click link below to finish registration:"
+        token = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
+        registration = Registrations(username=form.username.data, token=token, date=str(datetime.now()))
+        db.session.add(registration)
+        msg = Message('Registration confirmation', sender=app.config['ADMINS'][0],
+                      recipients=['makaszml@gmail.com'])
+        msg.body = 'Click following link to finish registration:  http://127.0.0.1:5000/activate?token=' + token
+        msg.html = '<h1>Registration</h1>' \
+                   '<p>Click following link to finish registration: <a href=http://127.0.0.1:5000/activate?token=' + token + '>Activation link</a></p>'
+
+        mail.connect()
+        mail.send(msg)
+
         mail.send(msg)
         db.session.add(user)
         db.session.commit()
@@ -132,3 +149,18 @@ def view_book():
         db.session.commit()
         return redirect(url_for('user_homepage'))
     return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=book, form=form)
+
+@app.route('/activate', methods=['GET', 'POST'])
+def activate():
+    token = request.args.get('token')
+    registration = Registrations.query.filter_by(token=token).first()
+    yesterday = datetime.now() - timedelta(days=1)
+    print(registration.date, yesterday)
+    if registration is not None and datetime.strptime(registration.date, "%Y-%m-%d %H:%M:%S.%f") > yesterday:
+        user = User.query.filter_by(username=registration.username).first()
+        user.activated = 'activated'
+        db.session.commit()
+        return redirect(url_for('login_m'))
+    return redirect(url_for('login_m'))
+
+
