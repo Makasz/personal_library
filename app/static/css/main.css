@@ -127,3 +127,7 @@ input::-webkit-input-placeholder {
 	border: #23527c solid 1px;
 	text-align: center;
 }
+
+#outside:checked + div {
+display: none;
+}

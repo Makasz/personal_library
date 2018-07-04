@@ -10,16 +10,8 @@
     <link rel="stylesheet" href="static/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="{{ url_for('static',filename='css/main.css') }}">
-    <script
-    src="https://code.jquery.com/jquery-3.3.1.min.js"
-    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-    crossorigin="anonymous"></script>
+
     <script src="static/js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
-    <script>
-    $('#outside').click(function() {
-        $('#username_field')[this.checked ? "show" : "hide"]();
-    });
-    </script>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -48,8 +40,8 @@
             <form class="navbar-form navbar-right" role="form">
                 <a type="submit" class="btn btn-success" href="{{ url_for('logout') }}">Log off</a>
             </form>
-            <form class="navbar-form navbar-right" role="form">
-                <a type="submit" class="btn btn-success" href="{{ url_for('user_collection') }}">My collection</a>
+             <form class="navbar-form navbar-right" role="form">
+                <a type="submit" class="btn btn-success" href="{{ url_for('user_homepage') }}">All books</a>
             </form>
         </div><!--/.navbar-collapse -->
     </div>
@@ -57,43 +49,13 @@
 
 <div class="container-fluid">
     <div class="panel panel-primary book_display">
-        {% if book.status == 'free' %}
         <div class="panel-heading">{{ book.title }}</div>
-        {% else %}
-        <div class="panel-heading">{{ book.title }} [NOT AVAILABLE]</div>
-        {% endif %}
         <div class="panel-body"><img src="{{ book.img_url }}" class="img-responsive"
                                      style="max-height:200px; margin: auto" alt="Image"></div>
         <div class="panel-footer">{{ book.description }}</div>
-
-        {% if book.status == 'free' %}
-        <div class="lend_form">
-            <form class="form-inline" method="post" action="#">
-                {{ lend_form.hidden_tag() }}
-                <label for="username">Outside:</label>
-                <input type="checkbox" name="outside" value="Outside" id="outside">
-                <div class="form-group" id="username_field">
-                    <label for="username">Username:</label>
-                    {{ lend_form.username(size=32,type="text", class_="form-control", id="username", placeholder="User137") }}
-                </div>
-                <div class="form-group">
-                    <label for="time">Date to:</label>
-                    {{ lend_form.time(size=32,type="text", class_="form-control", id="time", placeholder="14-09-2018") }}
-                </div>
-                <div class="form-group">
-                    {{ lend_form.submitL(class="btn btn-default") }}
-                </div>
-            </form>
-        </div>
-        {% endif %}
-
     </div>
 </div>
-</div>
 
-<footer>
-    <p>&copy; Company 2015</p>
-</footer>
 </div> <!-- /container -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
 <script>window.jQuery || document.write('<script src="static/js/vendor/jquery-1.11.2.js"><\/script>')</script>

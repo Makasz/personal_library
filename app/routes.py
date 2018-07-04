@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, session
 from flask import g
 from app.loginform import LoginForm
 from flask_login import LoginManager, logout_user, login_required, current_user, login_user
-from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db, Registrations
+from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db, Registrations, view_book_model, register_model
 from flask import request
 from werkzeug.urls import url_parse
 from app import db, metadata
@@ -75,6 +75,7 @@ def remove_book_from_collection():
 @app.route('/collection', methods=['POST', 'GET'], endpoint='user_collection')
 @login_required
 def user_collection():
+
     username = session['username']
     user = User.query.filter_by(username=username).first()
     books = user.books
@@ -96,26 +97,7 @@ def register():
         return redirect(url_for('user_homepage'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        msg = Message('Registration conformation', sender='yourId@gmail.com', recipients=[form.email.data])
-        msg.body = "Please click link below to finish registration:"
-        token = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
-        registration = Registrations(username=form.username.data, token=token, date=str(datetime.now()))
-        db.session.add(registration)
-        msg = Message('Registration confirmation', sender=app.config['ADMINS'][0],
-                      recipients=['makaszml@gmail.com'])
-        msg.body = 'Click following link to finish registration:  http://127.0.0.1:5000/activate?token=' + token
-        msg.html = '<h1>Registration</h1>' \
-                   '<p>Click following link to finish registration: <a href=http://127.0.0.1:5000/activate?token=' + token + '>Activation link</a></p>'
-
-        mail.connect()
-        mail.send(msg)
-
-        mail.send(msg)
-        db.session.add(user)
-        db.session.commit()
-        flash('Congratulations, you are now a registered user!')
+        register_model(form)
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -138,17 +120,21 @@ def view_book():
     lend_form = LendBookToForm()
     form = SearchBookForm()
     isbn = request.args.get('isbn')
+    res = view_book_model(lend_form, form, isbn)
+    if res[0] == 'redirect':
+        return redirect(url_for('user_collection'))
+    else:
+        return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=res[1], form=form)
+
+
+@app.route('/book_details_unowned', methods=['GET', 'POST'])
+@login_required
+def view_book_unowned():
+    form = SearchBookForm()
+    isbn = request.args.get('isbn')
     book = Books.query.filter_by(isbn=isbn).first()
-    print(lend_form.username.data,lend_form.time.data, lend_form.submitL.data, lend_form.validate_on_submit())
     print(form.value.data, form.validate_on_submit())
-    if lend_form.submitL.data and lend_form.validate_on_submit():
-        book.status = lend_form.time.data
-        book.current_owner = lend_form.username.data
-        print(book)
-        db.session.add(book)
-        db.session.commit()
-        return redirect(url_for('user_homepage'))
-    return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=book, form=form)
+    return render_template('book_details_unowned.html', title='Book Details', form=form, book=book)
 
 @app.route('/activate', methods=['GET', 'POST'])
 def activate():

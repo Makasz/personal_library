@@ -49,37 +49,26 @@
 
 <div class="container">
     {% for book in books %}
-        {% if book.status == 'free' %}
         <div class="book">
-        {% else %}
-        <div class="book grayout">
-        {% endif %}
             {% if book.title|length > 30 %}
                 <div class="book-header">{{ book.title[:30] }}...</div>
             {% else %}
                 <div class="book-header">{{ book.title }}</div>
             {% endif %}
-            <a href="{{ url_for('view_book', isbn=book.isbn) }}" class="book-img-container">
+            <a href="{{ url_for('view_book_unowned', isbn=book.isbn) }}" class="book-img-container">
                 <div class="book-body"><img src="{{ book.img_url }}" class="book-img" alt="Image"></div>
             </a>
             <div class="book-button" >
                 <a href="{{ url_for('add_book_to_collection', isbn=book.isbn) }}">Add to collection</a>
             </div>
             <div class="book-button" style="border-radius: 0px 0px 10px 10px;" href="{{ url_for('view_book', isbn=book.isbn) }}">
-                <a href="{{ url_for('view_book', isbn=book.isbn) }}">View details</a>
+                <a href="{{ url_for('view_book_unowned', isbn=book.isbn) }}">View details</a>
             </div>
         </div>
 
     {% endfor %}
-
-
-
-    {#    <footer>#}
-    {#        <p>&copy; Company 2015</p>#}
-    {#    </footer>#}
 </div> <!-- /container -->
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
-<script>window.jQuery || document.write('<script src="static/js/vendor/jquery-1.11.2.js"><\/script>')</script>
+
 
 <script src="static/js/vendor/bootstrap.min.js"></script>
 

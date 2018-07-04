@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
 
@@ -46,6 +46,7 @@ class SearchBookForm(FlaskForm):
 
 
 class LendBookToForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    outside = BooleanField('Outside')
+    username = StringField('Username')
     time = StringField('Time', validators=[DataRequired()])
     submitL = SubmitField('Lend')

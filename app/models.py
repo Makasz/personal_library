@@ -1,14 +1,22 @@
-from app import db
+from app import db, mail, app
 from app import login
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import render_template, flash, redirect, url_for, session
+from flask_mail import Mail, Message
+import random
+from datetime import datetime, timedelta
 
 rel = db.Table('rels',
                db.Column('book_isbn', db.Text, db.ForeignKey('books.isbn')),
-               db.Column('user_username', db.Text, db.ForeignKey('user.username'))
+               db.Column('user_username', db.Text, db.ForeignKey('user.username')),
+               db.Column('from_user', db.Text),
+               db.Column('date_to', db.Text)
                )
+
+
 
 class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True, primary_key=True)
@@ -79,9 +87,10 @@ def add_book_db(form, database):
     database.session.commit()
 
 
-def add_book_collection_db(isbn_p, username_p, database):
-    if isbn_p in [b.isbn for b in User.query.filter_by(username=username_p).first().books]:
-        return 0
+def add_book_collection_db(isbn_p, username_p, database, date_to=None, from_user=None):
+    if User.query.filter_by(username=username_p).first() is not None:
+        if isbn_p in [b.isbn for b in User.query.filter_by(username=username_p).first().books]:
+            return 0
     user = User.query.filter_by(username=username_p).first()
     book = Books.query.filter_by(isbn=isbn_p).first()
     book.owners.append(user)
@@ -93,3 +102,45 @@ def remove_book_from_collection_db(isbn_p, username_p, database):
     book = Books.query.filter_by(isbn=isbn_p).first()
     book.owners.remove(user)
     database.session.commit()
+
+def view_book_model(lend_form, form, isbn):
+    book = Books.query.filter_by(isbn=isbn).first()
+    if lend_form.submitL.data and lend_form.validate_on_submit():
+        book.status = lend_form.time.data
+        book.current_owner = lend_form.username.data
+        if not lend_form.outside.data and User.query.filter_by(username=lend_form.username.data).first() is None:
+            flash("No such user!")
+        else:
+            if not lend_form.outside.data:
+                add_book_collection_db(isbn, lend_form.username.data, db, lend_form.time.data, session['username'])
+            else:
+                add_book_collection_db(isbn, 'outside', db, lend_form.time.data, session['username'])
+            db.session.add(book)
+            db.session.commit()
+            return 'redirect', book
+    return 'render', book
+
+def register_model(form):
+    user = User(username=form.username.data, email=form.email.data)
+    user.set_password(form.password.data)
+    msg = Message('Registration conformation', sender='yourId@gmail.com', recipients=[form.email.data])
+    msg.body = "Please click link below to finish registration:"
+    token = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
+    registration = Registrations(username=form.username.data, token=token, date=str(datetime.now()))
+    db.session.add(registration)
+    msg = Message('Registration confirmation', sender=app.config['ADMINS'][0],
+                  recipients=['makaszml@gmail.com'])
+    msg.body = 'Click following link to finish registration:  http://127.0.0.1:5000/activate?token=' + token
+    msg.html = '<h1>Registration</h1>' \
+               '<p>Click following link to finish registration: <a href=http://127.0.0.1:5000/activate?token=' + token + '>Activation link</a></p>'
+
+    mail.connect()
+    mail.send(msg)
+
+    mail.send(msg)
+    db.session.add(user)
+    db.session.commit()
+    flash('Congratulations, you are now a registered user!')
+
+
+
