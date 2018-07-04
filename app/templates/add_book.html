@@ -15,7 +15,7 @@
 </head>
 <body>
 <div class="container">
-    <div class="row main">
+    <div class="row main"  style="margin: auto">
         <div class="panel-heading">
             <div class="panel-title text-center">
                 <h1 class="title">Add book</h1>
@@ -58,6 +58,24 @@
                         <div class="input-group">
                             <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
                             {{ form.author_surname(size=32, class_="form-control", id="author_surname",  placeholder="Enter surname") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="cols-sm-2 control-label">Url to image</label>
+                    <div class="cols-sm-10">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
+                            {{ form.img_url(size=32, class_="form-control", id="img_url",  placeholder="Enter url to book image") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="cols-sm-2 control-label">Description</label>
+                    <div class="cols-sm-10">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
+                            {{ form.description(size=32, class_="form-control", id="description",  placeholder="Enter description") }}
                         </div>
                     </div>
                 </div>

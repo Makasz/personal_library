@@ -131,3 +131,14 @@ input::-webkit-input-placeholder {
 #outside:checked + div {
 display: none;
 }
+
+.ad-comment {
+	padding: 5px;
+	font-size: 120%;
+	border: #23527c solid 1px;
+	text-align: center;
+}
+
+.comment-input {
+	width: 100%;
+}

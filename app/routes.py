@@ -3,11 +3,11 @@ from flask import render_template, flash, redirect, url_for, session
 from flask import g
 from app.loginform import LoginForm
 from flask_login import LoginManager, logout_user, login_required, current_user, login_user
-from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db, Registrations, view_book_model, register_model
+from app.models import User, Books, add_book_db, add_book_collection_db, remove_book_from_collection_db, Registrations, view_book_model, register_model, Comments, Libraries
 from flask import request
 from werkzeug.urls import url_parse
 from app import db, metadata
-from app.loginform import RegistrationForm, BookForm, SearchBookForm, LendBookToForm
+from app.loginform import RegistrationForm, BookForm, SearchBookForm, LendBookToForm, CommentForm
 from flask_mail import Mail, Message
 import random
 from datetime import datetime, timedelta
@@ -51,7 +51,10 @@ def user_homepage():
     print(metadata.tables.keys())
     books = Books.query.all()
     if request.args.get('value') is not None and len(request.args.get('value')) > 0:
-        books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
+        if request.args.get('search_type') == 'author':
+            books = [b for b in books if request.args.get('value').lower() in b.author_surname.lower() + ' ' + b.author_name.lower()]
+        else:
+            books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
     form = SearchBookForm()
     return render_template('index2.html', title='All books', books=books, form=form)
 
@@ -75,12 +78,16 @@ def remove_book_from_collection():
 @app.route('/collection', methods=['POST', 'GET'], endpoint='user_collection')
 @login_required
 def user_collection():
-
     username = session['username']
     user = User.query.filter_by(username=username).first()
-    books = user.books
+    lib = Libraries.query.filter_by(owner=username).first()
+    print(list(lib.books_in))
+    books = lib.books_in
     if request.args.get('value') is not None and len(request.args.get('value')) > 0:
-        books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
+        if request.args.get('search_type') == 'author':
+            books = [b for b in books if request.args.get('value').lower() in b.author_surname.lower() + ' ' + b.author_name.lower()]
+        else:
+            books = [b for b in books if request.args.get('value').lower() in b.title.lower()]
     form = SearchBookForm()
     return render_template('collection.html', title='Your books', books=books, form=form)
 
@@ -119,12 +126,14 @@ def add_book():
 def view_book():
     lend_form = LendBookToForm()
     form = SearchBookForm()
+    comment_form = CommentForm()
     isbn = request.args.get('isbn')
     res = view_book_model(lend_form, form, isbn)
+    comments = Comments.query.filter_by(related_book=isbn)
     if res[0] == 'redirect':
         return redirect(url_for('user_collection'))
     else:
-        return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=res[1], form=form)
+        return render_template('book_details.html', title='Book Details', lend_form=lend_form, book=res[1], form=form, comments=comments, comment_form=comment_form)
 
 
 @app.route('/book_details_unowned', methods=['GET', 'POST'])
