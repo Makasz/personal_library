@@ -53,6 +53,14 @@ class User(UserMixin, db.Model):
         return self.password_hash == password
 
 
+class Lend_History(UserMixin, db.Model):
+    id = db.Column(db.Integer, unique=True, primary_key=True, autoincrement=True)
+    book_isbn = db.Column(db.Text, db.ForeignKey('Books.isbn'))
+    state = db.Column(db.Text)
+    from_date = db.Column(db.Text)
+    to_date = db.Column(db.Text)
+
+
 class Books(UserMixin, db.Model):
     isbn = db.Column(db.Text, index=True, unique=True, primary_key=True)
     title = db.Column(db.Text)
@@ -117,29 +125,31 @@ def add_book_collection_db(isbn_p, username_p, database, date_to=None, from_user
     if User.query.filter_by(username=username_p).first() is not None:
         if isbn_p in [b.isbn for b in User.query.filter_by(username=username_p).first().books]:
             return 0
-    user = User.query.filter_by(username=username_p).first()
     book = Books.query.filter_by(isbn=isbn_p).first()
-    book.owners.append(user)
-    database.session.commit()
-
-
     lib = Libraries.query.filter_by(owner=username_p).first()
     book.parent_libs.append(lib)
     database.session.commit()
 
 
 def remove_book_from_collection_db(isbn_p, username_p, database):
-    user = User.query.filter_by(username=username_p).first()
     book = Books.query.filter_by(isbn=isbn_p).first()
-    book.owners.remove(user)
-    database.session.commit()
     lib = Libraries.query.filter_by(owner=username_p).first()
-    book.parent_libs.append(lib)
+    book.parent_libs.remove(lib)
     database.session.commit()
 
 
-def view_book_model(lend_form, form, isbn):
+def view_book_model(lend_form, form, isbn, comment_form):
     book = Books.query.filter_by(isbn=isbn).first()
+    if comment_form.comment_text.data is not None and comment_form.submitC.data:
+        comment = Comments(
+            author_username=session['username'],
+            text_value=comment_form.comment_text.data,
+            related_book=isbn,
+            date=datetime.now().strftime("%Y-%m-%d %H:%M")
+        )
+        db.session.add(comment)
+        db.session.commit()
+        return 'render', book, True
     time = lend_form.time.data
     if lend_form.submitL.data and lend_form.validate_on_submit():
         book.status = 'free'
@@ -152,10 +162,11 @@ def view_book_model(lend_form, form, isbn):
                 remove_book_from_collection_db(isbn, session['username'], db)
             else:
                 add_book_collection_db(isbn, 'outside', db, time, session['username'])
+                remove_book_from_collection_db(isbn, session['username'], db)
             db.session.add(book)
             db.session.commit()
-            return 'redirect', book
-    return 'render', book
+            return 'redirect', book, False
+    return 'render', book, False
 
 def register_model(form):
     user = User(username=form.username.data, email=form.email.data)

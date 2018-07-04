@@ -78,8 +78,9 @@
         {% endfor %}
         <div class="ad-comment" href="{{ url_for('view_book', isbn=book.isbn) }}">
                 <a href="{{ url_for('view_book', isbn=book.isbn) }}">Add comment</a>
+            {{ comment_form.hidden_tag() }}
         <br/>
-                    {{ comment_form.comment_text(class_="comment-input",size=30, placeholder="Comment...") }}
+                    {{ comment_form.comment_text(class_="comment-input",size=30, placeholder="Comment...", id="comment_text") }}
         </div>
 
         {% if book.status == 'free' %}

@@ -58,4 +58,5 @@ class LendBookToForm(FlaskForm):
 
 class CommentForm(FlaskForm):
     comment_text = StringField('Comment Text')
+    submitC = SubmitField('Add Comment')
 

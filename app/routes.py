@@ -128,8 +128,10 @@ def view_book():
     form = SearchBookForm()
     comment_form = CommentForm()
     isbn = request.args.get('isbn')
-    res = view_book_model(lend_form, form, isbn)
+    res = view_book_model(lend_form, form, isbn, comment_form)
     comments = Comments.query.filter_by(related_book=isbn)
+    if res[2]:
+        return redirect(url_for('view_book', isbn=isbn))
     if res[0] == 'redirect':
         return redirect(url_for('user_collection'))
     else:
